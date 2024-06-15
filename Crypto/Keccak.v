@@ -290,14 +290,14 @@ Lemma padding_length_ok (data_length: N) (rate: positive):
 Proof.
 unfold padding_length.
 remember (data_length mod N.pos rate)%N as m.
-destruct m; rewrite N.add_mod by discriminate; rewrite<- Heqm.
-{ rewrite N.add_0_l. rewrite N.mod_same by discriminate. apply N.mod_0_l. discriminate. }
+destruct m; rewrite N.Div0.add_mod by discriminate; rewrite<- Heqm.
+{ rewrite N.add_0_l. rewrite N.Div0.mod_same by discriminate. apply N.Div0.mod_0_l. }
 assert(L: (N.pos p < N.pos rate)%N).
 { rewrite Heqm. apply N.mod_upper_bound. discriminate. }
 replace (N.pos (rate - p) mod N.pos rate)%N with (N.pos (rate - p)).
 2:{ symmetry. apply N.mod_small. lia. }
 replace (N.pos p + N.pos (rate - p))%N with (N.pos rate) by lia.
-apply N.mod_same. discriminate.
+apply N.Div0.mod_same.
 Qed.
 
 Definition pad (unpadded_data: list byte) (rate: positive) (start: int)

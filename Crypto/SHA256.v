@@ -75,8 +75,8 @@ Proof.
 unfold padding_length.
 assert (F: (64 <> 0)%N) by discriminate.
 assert (B := N.mod_upper_bound len 64 F).
-rewrite N.add_mod by discriminate.
-rewrite N.add_mod_idemp_r by discriminate.
+rewrite N.Div0.add_mod by discriminate.
+rewrite N.Div0.add_mod_idemp_r by discriminate.
 remember (len mod 64)%N as n.
 remember (_ <? _)%N as c. symmetry in Heqc.
 destruct c.
@@ -131,7 +131,7 @@ repeat rewrite List.app_length.
 rewrite Tuplevector.app_to_list_length.
 repeat rewrite Nat2N.inj_add.
 rewrite N.add_assoc.
-rewrite N.add_mod by discriminate.
+rewrite N.Div0.add_mod by discriminate.
 cbn.
 remember (N.of_nat (List.length data)) as n.
 rewrite padding_ok.

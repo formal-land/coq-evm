@@ -41,7 +41,7 @@ repeat rewrite List.app_length.
 rewrite Tuplevector.app_to_list_length.
 repeat rewrite Nat2N.inj_add.
 rewrite N.add_assoc.
-rewrite N.add_mod by discriminate.
+rewrite N.Div0.add_mod by discriminate.
 cbn.
 remember (N.of_nat (List.length data)) as n.
 rewrite SHA256.padding_ok.
