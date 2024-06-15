@@ -28,6 +28,7 @@ jobs:
               source ~/.gvm/scripts/gvm
               # We need this intermediate step before going to 1.21
               gvm install go1.17
+              gvm use go1.17
               go version
               gvm install go1.21
               gvm use go1.21
