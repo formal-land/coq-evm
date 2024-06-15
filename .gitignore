@@ -1,3 +1,8 @@
+# Tests
+test/gen_tests/gen_tests
+test/*.v
+
+# Coq files
 .lia.cache
 .nia.cache
 .Makefile.d
