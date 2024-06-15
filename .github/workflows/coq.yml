@@ -23,7 +23,14 @@ jobs:
           custom_script: |
             startGroup "Install dependencies"
               sudo apt-get update
-              sudo apt-get install -y golang
+              sudo apt-get install -y golang bsdmainutils bison
+              bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
+              source ~/.gvm/scripts/gvm
+              # We need this intermediate step before going to 1.21
+              gvm install go1.17
+              go version
+              gvm install go1.21
+              gvm use go1.21
               go version
             endGroup
             startGroup "Set the rights"
