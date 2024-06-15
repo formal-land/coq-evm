@@ -1,7 +1,7 @@
 From Coq Require Import Ascii.
 From Coq Require Import NArith.
 From Coq Require Import ZArith.
-From Coq Require Import Int63.
+From Coq Require Import Uint63.
 From Coq Require Import Lia.
 From Coq Require String Ascii.
 
@@ -327,21 +327,21 @@ f_equal.
 Qed.
 
 Definition nibble_of_uint63 (i: int)
-:= Nibble (0 < (i land 8))%int63
-          (0 < (i land 4))%int63
-          (0 < (i land 2))%int63
-          (0 < (i land 1))%int63.
+:= Nibble (0 <? (i land 8))%uint63
+          (0 <? (i land 4))%uint63
+          (0 <? (i land 2))%uint63
+          (0 <? (i land 1))%uint63.
 
 Definition uint63_of_nibble (n: nibble)
 := match n with
    | Nibble a8 a4 a2 a1 =>
-       ((if a8 then 8%int63 else 0%int63)
+       ((if a8 then 8%uint63 else 0%uint63)
          lor
-        (if a4 then 4%int63 else 0%int63)
+        (if a4 then 4%uint63 else 0%uint63)
          lor
-        (if a2 then 2%int63 else 0%int63)
+        (if a2 then 2%uint63 else 0%uint63)
          lor
-        (if a1 then 1%int63 else 0%int63))%int63
+        (if a1 then 1%uint63 else 0%uint63))%uint63
    end.
 
 Lemma nibble_of_uint63_of_nibble (n: nibble):
@@ -353,37 +353,37 @@ Qed.
 
 (** A direct conversion from a native int to a hex digit via an if cascade. *)
 Definition hex_digit_of_uint63 (i: int)
-:= if (0 < (i land 8))%int63 then
-     if (0 < (i land 4))%int63 then
-       if (0 < (i land 2))%int63 then
-         if (0 < (i land 1))%int63 then xF else xE
+:= if (0 <? (i land 8))%uint63 then
+     if (0 <? (i land 4))%uint63 then
+       if (0 <? (i land 2))%uint63 then
+         if (0 <? (i land 1))%uint63 then xF else xE
        else
-         if (0 < (i land 1))%int63 then xD else xC
+         if (0 <? (i land 1))%uint63 then xD else xC
      else
-       if (0 < (i land 2))%int63 then
-         if (0 < (i land 1))%int63 then xB else xA
+       if (0 <? (i land 2))%uint63 then
+         if (0 <? (i land 1))%uint63 then xB else xA
        else
-         if (0 < (i land 1))%int63 then x9 else x8
+         if (0 <? (i land 1))%uint63 then x9 else x8
    else
-     if (0 < (i land 4))%int63 then
-       if (0 < (i land 2))%int63 then
-         if (0 < (i land 1))%int63 then x7 else x6
+     if (0 <? (i land 4))%uint63 then
+       if (0 <? (i land 2))%uint63 then
+         if (0 <? (i land 1))%uint63 then x7 else x6
        else
-         if (0 < (i land 1))%int63 then x5 else x4
+         if (0 <? (i land 1))%uint63 then x5 else x4
      else
-       if (0 < (i land 2))%int63 then
-         if (0 < (i land 1))%int63 then x3 else x2
+       if (0 <? (i land 2))%uint63 then
+         if (0 <? (i land 1))%uint63 then x3 else x2
        else
-         if (0 < (i land 1))%int63 then x1 else x0.
+         if (0 <? (i land 1))%uint63 then x1 else x0.
 
 Lemma hex_digit_of_nibble_of_uint63 (i: int):
   hex_digit_of_nibble (nibble_of_uint63 i) = hex_digit_of_uint63 i.
 Proof.
 unfold hex_digit_of_nibble. unfold nibble_of_uint63. unfold hex_digit_of_uint63.
-destruct (0 < i land 8)%int63;
-  destruct (0 < i land 4)%int63;
-  destruct (0 < i land 2)%int63;
-  destruct (0 < i land 1)%int63; easy.
+destruct (0 <? i land 8)%uint63;
+  destruct (0 <? i land 4)%uint63;
+  destruct (0 <? i land 2)%uint63;
+  destruct (0 <? i land 1)%uint63; easy.
 Qed.
 
 Lemma nibble_of_uint63_of_N (n: N):
@@ -502,14 +502,14 @@ destruct a3; destruct a2; destruct a1; destruct a0; trivial.
 Qed.
 
 Definition byte_of_int (i: int)
-:= Byte (0 < (i land 128))%int63
-        (0 < (i land 64))%int63
-        (0 < (i land 32))%int63
-        (0 < (i land 16))%int63
-        (0 < (i land 8))%int63
-        (0 < (i land 4))%int63
-        (0 < (i land 2))%int63
-        (0 < (i land 1))%int63.
+:= Byte (0 <? (i land 128))%uint63
+        (0 <? (i land 64))%uint63
+        (0 <? (i land 32))%uint63
+        (0 <? (i land 16))%uint63
+        (0 <? (i land 8))%uint63
+        (0 <? (i land 4))%uint63
+        (0 <? (i land 2))%uint63
+        (0 <? (i land 1))%uint63.
 
 Definition int_of_byte (b: byte)
 := match b with
@@ -521,7 +521,7 @@ Definition int_of_byte (b: byte)
       let a3 := if b3 then   8 lor a4 else a4 in
       let a2 := if b2 then   4 lor a3 else a3 in
       let a1 := if b1 then   2 lor a2 else a2 in
-                if b0 then   1 lor a1 else a1)%int63
+                if b0 then   1 lor a1 else a1)%uint63
    end.
 
 Lemma byte_of_int_of_byte (b: byte):

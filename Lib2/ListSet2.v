@@ -277,10 +277,7 @@ Proof.
 unfold list_subset.
 rewrite forallb_forall.
 split; intros H x; assert (Hx := H x); bool;
-  destruct (in_dec E x a); destruct (in_dec E x b); try tauto.
-firstorder.
-rewrite set_mem_false in H1. (* bug in Coq? rewrite set_mem_false in * doesn't work *)
-contradiction.
+  destruct (in_dec E x a); destruct (in_dec E x b); tauto.
 Qed.
 
 Lemma nodup_list_subset_ok {M: Type} (E: forall x y: M, {x = y} + {x <> y})
@@ -312,8 +309,7 @@ split.
   destruct H as (Ha, Hb).
   assert (Hax := Ha x). clear Ha.
   assert (Hbx := Hb x). clear Hb.
-  bool.
-  destruct (set_mem E x a); destruct (set_mem E x b); firstorder.
+  now destruct (set_mem E x a); destruct (set_mem E x b).
 }
 intros H. split; intro x; assert (Hx := H x); bool; repeat rewrite<- (set_mem_true E).
   destruct (set_mem E x a); destruct (set_mem E x b); firstorder.

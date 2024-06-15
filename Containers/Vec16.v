@@ -1,4 +1,4 @@
-From Coq Require Import Int63.
+From Coq Require Import Uint63.
 From EVM Require Import Nibble UInt63.
 
 Inductive vec16 (T: Type)
@@ -53,28 +53,28 @@ Definition get_by_int `(v: vec16 T) (i: uint63)
 : T
 := match v with
    | Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 va vb vc vd ve vf =>
-       if (0 < (i land 8))%int63 then
-         if (0 < (i land 4))%int63 then
-           if (0 < (i land 2))%int63 then
-             if (0 < (i land 1))%int63 then vf else ve
+       if (0 <? (i land 8))%uint63 then
+         if (0 <? (i land 4))%uint63 then
+           if (0 <? (i land 2))%uint63 then
+             if (0 <? (i land 1))%uint63 then vf else ve
            else
-             if (0 < (i land 1))%int63 then vd else vc
+             if (0 <? (i land 1))%uint63 then vd else vc
          else
-           if (0 < (i land 2))%int63 then
-             if (0 < (i land 1))%int63 then vb else va
+           if (0 <? (i land 2))%uint63 then
+             if (0 <? (i land 1))%uint63 then vb else va
            else
-             if (0 < (i land 1))%int63 then v9 else v8
+             if (0 <? (i land 1))%uint63 then v9 else v8
        else
-         if (0 < (i land 4))%int63 then
-           if (0 < (i land 2))%int63 then
-             if (0 < (i land 1))%int63 then v7 else v6
+         if (0 <? (i land 4))%uint63 then
+           if (0 <? (i land 2))%uint63 then
+             if (0 <? (i land 1))%uint63 then v7 else v6
            else
-             if (0 < (i land 1))%int63 then v5 else v4
+             if (0 <? (i land 1))%uint63 then v5 else v4
          else
-           if (0 < (i land 2))%int63 then
-             if (0 < (i land 1))%int63 then v3 else v2
+           if (0 <? (i land 2))%uint63 then
+             if (0 <? (i land 1))%uint63 then v3 else v2
            else
-             if (0 < (i land 1))%int63 then v1 else v0
+             if (0 <? (i land 1))%uint63 then v1 else v0
   end.
 
 Lemma get_by_hex_of_int `(v: vec16 T) (i: uint63):
@@ -82,10 +82,10 @@ Lemma get_by_hex_of_int `(v: vec16 T) (i: uint63):
 Proof.
 unfold get_by_int.
 unfold hex_digit_of_uint63. unfold get_by_hex.
-destruct (0 < i land 8)%int63;
-  destruct (0 < i land 4)%int63;
-  destruct (0 < i land 2)%int63;
-  destruct (0 < i land 1)%int63; easy.
+destruct (0 <? i land 8)%uint63;
+  destruct (0 <? i land 4)%uint63;
+  destruct (0 <? i land 2)%uint63;
+  destruct (0 <? i land 1)%uint63; easy.
 Qed.
 
 Definition set_by_hex {T: Type} (v: vec16 T) (h: hex_digit) (XX: T)
@@ -116,49 +116,49 @@ Definition set_by_int `(v: vec16 T) (i: uint63) (XX: T)
 : vec16 T
 := match v with
    | Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 va vb vc vd ve vf =>
-       if (0 < (i land 8))%int63 then
-         if (0 < (i land 4))%int63 then
-           if (0 < (i land 2))%int63 then
-             if (0 < (i land 1))%int63 then
+       if (0 <? (i land 8))%uint63 then
+         if (0 <? (i land 4))%uint63 then
+           if (0 <? (i land 2))%uint63 then
+             if (0 <? (i land 1))%uint63 then
                Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 va vb vc vd ve XX
              else
                Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 va vb vc vd XX vf
            else
-             if (0 < (i land 1))%int63 then 
+             if (0 <? (i land 1))%uint63 then 
                Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 va vb vc XX ve vf
              else 
                Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 va vb XX vd ve vf
          else
-           if (0 < (i land 2))%int63 then
-             if (0 < (i land 1))%int63 then
+           if (0 <? (i land 2))%uint63 then
+             if (0 <? (i land 1))%uint63 then
                Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 va XX vc vd ve vf
              else 
                Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 XX vb vc vd ve vf
            else
-             if (0 < (i land 1))%int63 then
+             if (0 <? (i land 1))%uint63 then
                Vec16 v0 v1 v2 v3 v4 v5 v6 v7 v8 XX va vb vc vd ve vf
              else
                Vec16 v0 v1 v2 v3 v4 v5 v6 v7 XX v9 va vb vc vd ve vf
        else
-         if (0 < (i land 4))%int63 then
-           if (0 < (i land 2))%int63 then
-             if (0 < (i land 1))%int63 then
+         if (0 <? (i land 4))%uint63 then
+           if (0 <? (i land 2))%uint63 then
+             if (0 <? (i land 1))%uint63 then
                Vec16 v0 v1 v2 v3 v4 v5 v6 XX v8 v9 va vb vc vd ve vf 
              else
                Vec16 v0 v1 v2 v3 v4 v5 XX v7 v8 v9 va vb vc vd ve vf
            else
-             if (0 < (i land 1))%int63 then
+             if (0 <? (i land 1))%uint63 then
                Vec16 v0 v1 v2 v3 v4 XX v6 v7 v8 v9 va vb vc vd ve vf
              else
                Vec16 v0 v1 v2 v3 XX v5 v6 v7 v8 v9 va vb vc vd ve vf
          else
-           if (0 < (i land 2))%int63 then
-             if (0 < (i land 1))%int63 then
+           if (0 <? (i land 2))%uint63 then
+             if (0 <? (i land 1))%uint63 then
                Vec16 v0 v1 v2 XX v4 v5 v6 v7 v8 v9 va vb vc vd ve vf
              else
                Vec16 v0 v1 XX v3 v4 v5 v6 v7 v8 v9 va vb vc vd ve vf
            else
-             if (0 < (i land 1))%int63 then
+             if (0 <? (i land 1))%uint63 then
                Vec16 v0 XX v2 v3 v4 v5 v6 v7 v8 v9 va vb vc vd ve vf
              else
                Vec16 XX v1 v2 v3 v4 v5 v6 v7 v8 v9 va vb vc vd ve vf
@@ -169,10 +169,10 @@ Lemma set_by_hex_of_int `(v: vec16 T) (i: uint63) (new_value: T):
 Proof.
 unfold set_by_int.
 unfold hex_digit_of_uint63. unfold set_by_hex.
-destruct (0 < i land 8)%int63;
-  destruct (0 < i land 4)%int63;
-  destruct (0 < i land 2)%int63;
-  destruct (0 < i land 1)%int63; easy.
+destruct (0 <? i land 8)%uint63;
+  destruct (0 <? i land 4)%uint63;
+  destruct (0 <? i land 2)%uint63;
+  destruct (0 <? i land 1)%uint63; easy.
 Qed.
 
 Definition combine {T: Type} (u v: vec16 T) (h: hex_digit)

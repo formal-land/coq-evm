@@ -7,7 +7,7 @@ From Coq Require Import List.
 From Coq Require HexString.
 From Coq Require Import String.
 From Coq Require Import NArith ZArith Lia.
-From Coq Require Import Int63.
+From Coq Require Import Uint63.
 
 From EVM Require UInt64 Tuplevector.
 From EVM Require Import Nibble.
@@ -94,7 +94,7 @@ Local Notation "x | y"  := (UInt64.bitwise_or x y)  (at level 30). (* dangerous!
 Local Notation "x & y"  := (UInt64.bitwise_and x y) (at level 30).
 Local Notation "~ x"  := (UInt64.bitwise_not x).
 
-Definition rot x k := ((x << k) | (x >> (64 - k)%int63)).
+Definition rot x k := ((x << k) | (x >> (64 - k)%uint63)).
 
 Definition round (rc: uint64) (a: vec25 uint64) (b: vec25 uint64)
 : vec25 uint64
@@ -116,17 +116,17 @@ Definition round (rc: uint64) (a: vec25 uint64) (b: vec25 uint64)
       let bc3 := a3 ^ a8 ^ a13 ^ a18 ^ a23 in
       let bc4 := a4 ^ a9 ^ a14 ^ a19 ^ a24 in
 
-      let d0 := bc4 ^ rot bc1 1%int63 in
-      let d1 := bc0 ^ rot bc2 1%int63 in
-      let d2 := bc1 ^ rot bc3 1%int63 in
-      let d3 := bc2 ^ rot bc4 1%int63 in
-      let d4 := bc3 ^ rot bc0 1%int63 in
+      let d0 := bc4 ^ rot bc1 1%uint63 in
+      let d1 := bc0 ^ rot bc2 1%uint63 in
+      let d2 := bc1 ^ rot bc3 1%uint63 in
+      let d3 := bc2 ^ rot bc4 1%uint63 in
+      let d4 := bc3 ^ rot bc0 1%uint63 in
 
       let p0 := b0 ^ d0 in
-      let p1 := rot (b1 ^ d1) 44%int63 in
-      let p2 := rot (b2 ^ d2) 43%int63 in
-      let p3 := rot (b3 ^ d3) 21%int63 in
-      let p4 := rot (b4 ^ d4) 14%int63 in
+      let p1 := rot (b1 ^ d1) 44%uint63 in
+      let p2 := rot (b2 ^ d2) 43%uint63 in
+      let p3 := rot (b3 ^ d3) 21%uint63 in
+      let p4 := rot (b4 ^ d4) 14%uint63 in
 
       let z0  := p0 ^ (p2 & ~ p1) ^ rc in
       let z1  := p1 ^ (p3 & ~ p2) in
@@ -134,11 +134,11 @@ Definition round (rc: uint64) (a: vec25 uint64) (b: vec25 uint64)
       let z3  := p3 ^ (p0 & ~ p4) in
       let z4  := p4 ^ (p1 & ~ p0) in
 
-      let q2 := rot (b5 ^ d0)  3%int63 in
-      let q3 := rot (b6 ^ d1) 45%int63 in
-      let q4 := rot (b7 ^ d2) 61%int63 in
-      let q0 := rot (b8 ^ d3) 28%int63 in
-      let q1 := rot (b9 ^ d4) 20%int63 in
+      let q2 := rot (b5 ^ d0)  3%uint63 in
+      let q3 := rot (b6 ^ d1) 45%uint63 in
+      let q4 := rot (b7 ^ d2) 61%uint63 in
+      let q0 := rot (b8 ^ d3) 28%uint63 in
+      let q1 := rot (b9 ^ d4) 20%uint63 in
 
       let z5  := q0 ^ (q2 & ~ q1) in
       let z6  := q1 ^ (q3 & ~ q2) in
@@ -146,11 +146,11 @@ Definition round (rc: uint64) (a: vec25 uint64) (b: vec25 uint64)
       let z8  := q3 ^ (q0 & ~ q4) in
       let z9  := q4 ^ (q1 & ~ q0) in
 
-      let r4 := rot (b10 ^ d0) 18%int63 in
-      let r0 := rot (b11 ^ d1)  1%int63 in
-      let r1 := rot (b12 ^ d2)  6%int63 in
-      let r2 := rot (b13 ^ d3) 25%int63 in
-      let r3 := rot (b14 ^ d4)  8%int63 in
+      let r4 := rot (b10 ^ d0) 18%uint63 in
+      let r0 := rot (b11 ^ d1)  1%uint63 in
+      let r1 := rot (b12 ^ d2)  6%uint63 in
+      let r2 := rot (b13 ^ d3) 25%uint63 in
+      let r3 := rot (b14 ^ d4)  8%uint63 in
 
       let z10 := r0 ^ (r2 & ~ r1) in
       let z11 := r1 ^ (r3 & ~ r2) in
@@ -158,11 +158,11 @@ Definition round (rc: uint64) (a: vec25 uint64) (b: vec25 uint64)
       let z13 := r3 ^ (r0 & ~ r4) in
       let z14 := r4 ^ (r1 & ~ r0) in
 
-      let s1 := rot (b15 ^ d0) 36%int63 in
-      let s2 := rot (b16 ^ d1) 10%int63 in
-      let s3 := rot (b17 ^ d2) 15%int63 in
-      let s4 := rot (b18 ^ d3) 56%int63 in
-      let s0 := rot (b19 ^ d4) 27%int63 in
+      let s1 := rot (b15 ^ d0) 36%uint63 in
+      let s2 := rot (b16 ^ d1) 10%uint63 in
+      let s3 := rot (b17 ^ d2) 15%uint63 in
+      let s4 := rot (b18 ^ d3) 56%uint63 in
+      let s0 := rot (b19 ^ d4) 27%uint63 in
 
       let z15 := s0 ^ (s2 & ~ s1) in
       let z16 := s1 ^ (s3 & ~ s2) in
@@ -170,11 +170,11 @@ Definition round (rc: uint64) (a: vec25 uint64) (b: vec25 uint64)
       let z18 := s3 ^ (s0 & ~ s4) in
       let z19 := s4 ^ (s1 & ~ s0) in
 
-      let t3 := rot (b20 ^ d0) 41%int63 in
-      let t4 := rot (b21 ^ d1)  2%int63 in
-      let t0 := rot (b22 ^ d2) 62%int63 in
-      let t1 := rot (b23 ^ d3) 55%int63 in
-      let t2 := rot (b24 ^ d4) 39%int63 in
+      let t3 := rot (b20 ^ d0) 41%uint63 in
+      let t4 := rot (b21 ^ d1)  2%uint63 in
+      let t0 := rot (b22 ^ d2) 62%uint63 in
+      let t1 := rot (b23 ^ d3) 55%uint63 in
+      let t2 := rot (b24 ^ d4) 39%uint63 in
 
       let z20 := t0 ^ (t2 & ~ t1) in
       let z21 := t1 ^ (t3 & ~ t2) in
@@ -257,7 +257,7 @@ End Permutation.
 Definition padding (len: positive) (start: int) (* start is 1 for Ethereum's Keccak, otherwise 6 *)
 : list byte
 := match len with
-   | 1%positive => byte_of_int (128 lor start)%int63 :: nil
+   | 1%positive => byte_of_int (128 lor start)%uint63 :: nil
    | _ => (byte_of_int start) :: repeat (byte_of_int 0) (N.to_nat (N.pos len - 2)) ++ 
             byte_of_int 128 :: nil
    end.

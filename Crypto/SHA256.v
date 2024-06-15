@@ -1,6 +1,6 @@
 (** This is a port of Go's crypto/sha256. *)
 
-From Coq Require Import NArith ZArith Lia Int63.
+From Coq Require Import NArith ZArith Lia Uint63.
 From Coq Require Import String HexString.
 
 From EVM Require Import Nibble UInt64.
@@ -14,7 +14,7 @@ Definition vec8_add (a b: Vec8.t int)
 := let 'Vec8.Vec8 a0 a1 a2 a3 a4 a5 a6 a7 := a in
    let 'Vec8.Vec8 b0 b1 b2 b3 b4 b5 b6 b7 := b in
    (Vec8.Vec8 (a0 + b0) (a1 + b1) (a2 + b2) (a3 + b3)
-              (a4 + b4) (a5 + b5) (a6 + b6) (a7 + b7))%int63.
+              (a4 + b4) (a5 + b5) (a6 + b6) (a7 + b7))%uint63.
 
 Definition init_hex: Vec8.t string
 := (Vec8.Vec8 "0x6A09E667"
@@ -26,7 +26,7 @@ Definition init_hex: Vec8.t string
               "0x1F83D9AB"
               "0x5BE0CD19")%string.
 
-Definition init := Vec8.map Int63.of_Z (Vec8.map HexString.to_Z init_hex).
+Definition init := Vec8.map Uint63.of_Z (Vec8.map HexString.to_Z init_hex).
 
 Definition K_hex: Vec8.t (Vec8.t string)
 := (Vec8.Vec8 (Vec8.Vec8 "0x428a2f98" "0x71374491" "0xb5c0fbcf" "0xe9b5dba5"
@@ -45,7 +45,7 @@ Definition K_hex: Vec8.t (Vec8.t string)
                          "0x391c0cb3" "0x4ed8aa4a" "0x5b9cca4f" "0x682e6ff3")
               (Vec8.Vec8 "0x748f82ee" "0x78a5636f" "0x84c87814" "0x8cc70208"
                          "0x90befffa" "0xa4506ceb" "0xbef9a3f7" "0xc67178f2"))%string.
-Definition K := Vec8.map (Vec8.map (fun hex => Int63.of_Z (HexString.to_Z hex))) K_hex.
+Definition K := Vec8.map (Vec8.map (fun hex => Uint63.of_Z (HexString.to_Z hex))) K_hex.
 
 
 (** Calculate the padding length given the data length. *)
@@ -167,7 +167,7 @@ Definition int_of_4_le_bytes (b: byte * byte * byte * byte)
    ((int_of_byte b3 << 24) lor 
     (int_of_byte b2 << 16) lor
     (int_of_byte b1 <<  8) lor
-    (int_of_byte b0))%int63.
+    (int_of_byte b0))%uint63.
 
 Definition pad_and_gather_into_uint32s (data: list byte)
 := let padded := pad data in
@@ -189,7 +189,7 @@ Definition vec64 (T: Type) := Vec8.t (Vec8.t T).
 
 Definition block_of_tuple (block: Tuplevector.t int 16)
 : vec64 int
-:= let z := (Vec8.Vec8 0 0 0 0 0 0 0 0)%int63 in
+:= let z := (Vec8.Vec8 0 0 0 0 0 0 0 0)%uint63 in
    let '(bF, bE, bD, bC, bB, bA, b9, b8, b7, b6, b5, b4, b3, b2, b1, b0) := block in
    Vec8.Vec8 (Vec8.Vec8 b0 b1 b2 b3 b4 b5 b6 b7) (Vec8.Vec8 b8 b9 bA bB bC bD bE bF) z z z z z z.
 
@@ -201,27 +201,27 @@ Definition blocks (data: list byte)
                                 (pad_and_gather_into_uint32s_length data)).
 
 Definition vec64_get {T: Type} (v: vec64 T) (i: int)
-:= Vec8.get (Vec8.get v (i >> 3)%int63) i.
+:= Vec8.get (Vec8.get v (i >> 3)%uint63) i.
 
 Definition vec64_set {T: Type} (v: vec64 T) (i: int) (new: T)
-:= let hi := (i >> 3)%int63 in
+:= let hi := (i >> 3)%uint63 in
    Vec8.set v hi (Vec8.set (Vec8.get v hi) i new).
 
-Definition uint32_mask := ((1 << 32) - 1)%int63.
+Definition uint32_mask := ((1 << 32) - 1)%uint63.
 
-Definition shr (i sh: int) := ((i land uint32_mask) >> sh)%int63.
-Definition rot (i sh: int) := (shr i sh lor (i << (32 - sh)))%int63.
+Definition shr (i sh: int) := ((i land uint32_mask) >> sh)%uint63.
+Definition rot (i sh: int) := (shr i sh lor (i << (32 - sh)))%uint63.
 
 Fixpoint calc_w_rec (n: nat) (start: vec64 int)
 := match n with
    | O => start
    | S k => (let w := calc_w_rec k start in
-             let i := Int63.of_Z (Z.of_nat n + 15)%Z in
-             let v1 := vec64_get w (i -  2)%int63 in
+             let i := Uint63.of_Z (Z.of_nat n + 15)%Z in
+             let v1 := vec64_get w (i -  2)%uint63 in
              let t1 := (rot v1 17) lxor (rot v1 19) lxor (shr v1 10) in
-             let v2 := vec64_get w (i - 15)%int63 in
+             let v2 := vec64_get w (i - 15)%uint63 in
              let t2 := (rot v2 7) lxor (rot v2 18) lxor (shr v2 3) in
-             vec64_set w i (t1 + vec64_get w (i-7) + t2 + vec64_get w (i-16)))%int63
+             vec64_set w i (t1 + vec64_get w (i-7) + t2 + vec64_get w (i-16)))%uint63
    end.
 Definition calc_w (w: vec64 int) := calc_w_rec 48 w.
 
@@ -230,7 +230,7 @@ Fixpoint do_block_rec (n: nat) (initial_state: Vec8.t int) (w_after_calc: vec64 
 := match n with
    | O => initial_state
    | S k => let state := do_block_rec k initial_state w_after_calc in
-            let i := Int63.of_Z (Z.of_nat k) in
+            let i := Uint63.of_Z (Z.of_nat k) in
             let 'Vec8.Vec8 a b c d e f g h := state in
             (let t1 := h + ((rot e 6) lxor (rot e 11) lxor (rot e 25)) 
                          + ((e land f) lxor ((e lxor uint32_mask) land g))
@@ -238,7 +238,7 @@ Fixpoint do_block_rec (n: nat) (initial_state: Vec8.t int) (w_after_calc: vec64 
                          + vec64_get w_after_calc i in
              let t2 := ((rot a 2) lxor (rot a 13) lxor (rot a 22))
                          + ((a land b) lxor (a land c) lxor (b land c)) in
-             Vec8.Vec8 (t1 + t2) a b c (d + t1) e f g)%int63
+             Vec8.Vec8 (t1 + t2) a b c (d + t1) e f g)%uint63
    end.
 Definition do_block (state: Vec8.t int) (w: vec64 int)
 := do_block_rec 64 state w.
@@ -253,7 +253,7 @@ Definition be_4_bytes_of_int (i: int)
 := (byte_of_int (i >> 24)
  :: byte_of_int (i >> 16)
  :: byte_of_int (i >> 8)
- :: byte_of_int i :: nil)%list%int63.
+ :: byte_of_int i :: nil)%list%uint63.
 
 Definition squeeze (state: Vec8.t int)
 := List.concat (List.map be_4_bytes_of_int (Vec8.to_list state)).

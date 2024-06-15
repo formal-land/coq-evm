@@ -8,7 +8,7 @@ Lib2/QArith2.v
 Lib2/Vector2.v
 
 Arith/Nibble.v
-Arith/SInt.v
+#Arith/SInt.v
 Arith/UInt.v
 Arith/UInt63.v
 Arith/UInt64.v
