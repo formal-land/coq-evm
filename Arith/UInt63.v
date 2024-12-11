@@ -2,7 +2,7 @@
   This file continues theories/Numbers/Cyclic/Int63/Int63.v from the standard library of Coq.
  *)
 
-From Coq Require Import Int63 NArith ZArith Lia.
+From Coq Require Import Uint63 NArith ZArith Lia.
 
 From EVM Require Import Logic2 Arith2.
 
@@ -44,21 +44,21 @@ tauto.
 Qed.
 
 Lemma uint63_ltb_Z (x y: uint63):
-  (x < y)%int63 = (to_Z x <? to_Z y)%Z.
+  (x <? y)%uint63 = (to_Z x <? to_Z y)%Z.
 Proof.
 apply (relation_quad (fun x y => iff_refl _) Z.ltb_lt).
 apply ltb_spec.
 Qed.
 
 Lemma uint63_leb_Z (x y: uint63):
-  (x <= y)%int63 = (to_Z x <=? to_Z y)%Z.
+  (x <=? y)%uint63 = (to_Z x <=? to_Z y)%Z.
 Proof.
 apply (relation_quad (fun x y => iff_refl _) Z.leb_le).
 apply leb_spec.
 Qed.
 
 Lemma uint63_ltb_N (x y: uint63):
-  (x < y)%int63 = (N_of_uint63 x <? N_of_uint63 y)%N.
+  (x <? y)%uint63 = (N_of_uint63 x <? N_of_uint63 y)%N.
 Proof.
 rewrite uint63_ltb_Z.
 unfold N_of_uint63.
@@ -73,7 +73,7 @@ apply L.
 Qed.
 
 Lemma uint63_leb_N (x y: uint63):
-  (x <= y)%int63 = (N_of_uint63 x <=? N_of_uint63 y)%N.
+  (x <=? y)%uint63 = (N_of_uint63 x <=? N_of_uint63 y)%N.
 Proof.
 rewrite uint63_leb_Z.
 unfold N_of_uint63.
@@ -88,11 +88,11 @@ apply L.
 Qed.
 
 Lemma uint63_get_high_digit (i k: uint63)
-                            (B: (63 <= k)%int63 = true):
+                            (B: (63 <=? k)%uint63 = true):
   get_digit i k = false.
 Proof.
 unfold get_digit.
-enough (U: (1 << k = 0)%int63).
+enough (U: (1 << k = 0)%uint63).
 { 
   rewrite U.
   rewrite uint63_ltb_Z.
@@ -109,7 +109,7 @@ rewrite lsl_spec.
 rewrite to_Z_1. rewrite to_Z_0.
 rewrite Z.mul_1_l.
 rewrite uint63_leb_Z in B.
-replace (to_Z 63%int63) with 63%Z in B. 2:{ trivial. }
+replace (to_Z 63%uint63) with 63%Z in B. 2:{ trivial. }
 remember (to_Z k) as n. clear i k Heqn.
 remember (n - 63)%Z as m.
 assert (Q: n = (m + 63)%Z). { subst. lia. }
@@ -121,7 +121,7 @@ Qed.
 Lemma uint63_testbit_Z (i k: uint63):
   get_digit i k = Z.testbit (to_Z i) (to_Z k).
 Proof.
-remember (k < 63)%int63 as Low. symmetry in HeqLow.
+remember (k <? 63)%uint63 as Low. symmetry in HeqLow.
 destruct Low.
 { 
   unfold get_digit.
@@ -130,8 +130,8 @@ destruct Low.
   rewrite lsl_spec.
   remember (to_Z i) as n.
   remember (to_Z k) as m.
-  replace (to_Z 0%int63) with 0%Z. 2:{ trivial. }
-  replace (to_Z 1%int63) with 1%Z. 2:{ trivial. }
+  replace (to_Z 0%uint63) with 0%Z. 2:{ trivial. }
+  replace (to_Z 1%uint63) with 1%Z. 2:{ trivial. }
   rewrite Z.mul_1_l.
   rewrite Z.mod_small.
   2:{
@@ -154,7 +154,7 @@ subst. tauto.
 assert(Bk: (63 <= to_Z k)%Z).
 {
   rewrite uint63_ltb_Z in HeqLow.
-  replace (to_Z 63%int63) with 63%Z in HeqLow. 2:{ trivial. }
+  replace (to_Z 63%uint63) with 63%Z in HeqLow. 2:{ trivial. }
   rewrite Z.ltb_ge in HeqLow.
   assumption.
 }
@@ -197,7 +197,7 @@ Qed.
 (**************************************************************************)
 
 Lemma uint63_land_N (x y: uint63):
-  N_of_uint63 (x land y)%int63 = N.land (N_of_uint63 x) (N_of_uint63 y).
+  N_of_uint63 (x land y)%uint63 = N.land (N_of_uint63 x) (N_of_uint63 y).
 Proof.
 unfold N_of_uint63.
 rewrite land_spec'.
@@ -205,7 +205,7 @@ apply Z_to_N_land; apply Z_of_uint63_nonneg.
 Qed.
 
 Lemma uint63_lor_N (x y: uint63):
-  N_of_uint63 (x lor y)%int63 = N.lor (N_of_uint63 x) (N_of_uint63 y).
+  N_of_uint63 (x lor y)%uint63 = N.lor (N_of_uint63 x) (N_of_uint63 y).
 Proof.
 unfold N_of_uint63.
 rewrite lor_spec'.
@@ -213,7 +213,7 @@ apply Z_to_N_lor; apply Z_of_uint63_nonneg.
 Qed.
 
 Lemma uint63_lxor_N (x y: uint63):
-  N_of_uint63 (x lxor y)%int63 = N.lxor (N_of_uint63 x) (N_of_uint63 y).
+  N_of_uint63 (x lxor y)%uint63 = N.lxor (N_of_uint63 x) (N_of_uint63 y).
 Proof.
 unfold N_of_uint63.
 rewrite lxor_spec'.

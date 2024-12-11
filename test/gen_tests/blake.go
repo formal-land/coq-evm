@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"../../3rdparty/blake2b"
+	"gen_tests/3rdparty/blake2b"
 )
 
 func printBlakeTest(index, rounds int) {

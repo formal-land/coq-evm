@@ -1,4 +1,4 @@
-From Coq Require Import NArith ZArith Int63 String.
+From Coq Require Import NArith ZArith Uint63 String.
 From Coq Require HexString.
 
 From EVM Require Import Nibble.
@@ -41,7 +41,7 @@ repeat rewrite List.app_length.
 rewrite Tuplevector.app_to_list_length.
 repeat rewrite Nat2N.inj_add.
 rewrite N.add_assoc.
-rewrite N.add_mod by discriminate.
+rewrite N.Div0.add_mod by discriminate.
 cbn.
 remember (N.of_nat (List.length data)) as n.
 rewrite SHA256.padding_ok.
@@ -71,7 +71,7 @@ Definition int_of_4_be_bytes (b: byte * byte * byte * byte)
    ((int_of_byte b3 << 24) lor 
     (int_of_byte b2 << 16) lor
     (int_of_byte b1 <<  8) lor
-    (int_of_byte b0))%int63.
+    (int_of_byte b0))%uint63.
 
 Definition pad_and_gather_into_uint32s (data: list byte)
 := let padded := pad data in
@@ -143,30 +143,30 @@ Local Definition r_4: Vec16.t int := Vec16.Vec16 15 5 8 11 14 14 6 14 6 9 12 9 1
 Local Definition r_5: Vec16.t int := Vec16.Vec16 8 5 12 9 12 5 14 6 8 13 6 5 15 13 11 11.
 
 Definition uint32_mask: int := (1 << 32) - 1.
-Definition uint32_not (i: int) := uint32_mask lxor i.
+Definition uint32_not (i: int) := (uint32_mask lxor i)%uint63.
 
 (* Rotate an int left as if it was uint32. *)
-Definition rot x k := (x << k) lor ((x land uint32_mask) >> (32 - k)).
+Definition rot x k := ((x << k) lor ((x land uint32_mask) >> (32 - k)))%uint63.
 
-Definition f1 (x y z: int) := x lxor y lxor z.
-Definition f2 (x y z: int) := (x land y) lor (uint32_not x land z).
-Definition f3 (x y z: int) := (x lor uint32_not y) lxor z.
-Definition f4 (x y z: int) := (x land z) lor (y land uint32_not z).
-Definition f5 (x y z: int) := x lxor (y lor uint32_not z).
+Definition f1 (x y z: int): int := x lxor y lxor z.
+Definition f2 (x y z: int): int := (x land y) lor (uint32_not x land z).
+Definition f3 (x y z: int): int := (x lor uint32_not y) lxor z.
+Definition f4 (x y z: int): int := (x land z) lor (y land uint32_not z).
+Definition f5 (x y z: int): int := x lxor (y lor uint32_not z).
 
 Definition round (n r: Vec16.t int) (const: int) (f: int -> int -> int -> int)
                   (x: Vec16.t int) (s: vec5 int) (i: int)
 : vec5 int
 := let 'Vec5 a b c d e := s in
-   let alpha := a 
+   let alpha := (a 
               + f b c d
               + Vec16.get_by_int x (Vec16.get_by_int n i)
-              + const in
-   let alpha' := rot alpha (Vec16.get_by_int r i) + e in
+              + const)%uint63 in
+   let alpha' := (rot alpha (Vec16.get_by_int r i) + e)%uint63 in
    let beta := rot c 10 in
    Vec5 e alpha' b beta d.
 
-Definition int_of_hex (s: string) := Int63.of_Z (HexString.to_Z s).
+Definition int_of_hex (s: string) := Uint63.of_Z (HexString.to_Z s).
 
 Definition iota: Vec16.t int := Vec16.Vec16 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15.
 
@@ -197,11 +197,11 @@ Definition absorb_block (s: vec5 int) (x: Vec16.t int)
 := let 'Vec5 s0 s1 s2 s3 s4 := s in
    let 'Vec5 a0 a1 a2 a3 a4 := rounds_a x s in
    let 'Vec5 b0 b1 b2 b3 b4 := rounds_b x s in
-   Vec5 (s1 + a2 + b3)
-        (s2 + a3 + b4)
-        (s3 + a4 + b0)
-        (s4 + a0 + b1)
-        (s0 + a1 + b2).
+   Vec5 (s1 + a2 + b3)%uint63
+        (s2 + a3 + b4)%uint63
+        (s3 + a4 + b0)%uint63
+        (s4 + a0 + b1)%uint63
+        (s0 + a1 + b2)%uint63.
 
 Definition absorb (data: list byte)
 := List.fold_left absorb_block (blocks data) init.
@@ -210,7 +210,7 @@ Definition le_4_bytes_of_int (i: int)
 := (byte_of_int i
  :: byte_of_int (i >> 8)
  :: byte_of_int (i >> 16)
- :: byte_of_int (i >> 24) :: nil)%list%int63.
+ :: byte_of_int (i >> 24) :: nil)%list%uint63.
 
 Definition squeeze (state: vec5 int)
 := List.concat (List.map le_4_bytes_of_int (vec5_to_list state)).

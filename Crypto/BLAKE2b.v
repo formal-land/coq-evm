@@ -2,7 +2,7 @@ From Coq Require Import List.
 From Coq Require HexString.
 From Coq Require Import String.
 From Coq Require Import NArith ZArith Lia.
-From Coq Require Import Int63.
+From Coq Require Import Uint63.
 
 From EVM Require UInt64 Tuplevector Vec8 Vec16.
 From EVM Require Import Nibble.
@@ -39,19 +39,19 @@ Local Notation "x | y"  := (UInt64.bitwise_or x y)  (at level 30). (* dangerous!
 Local Notation "x & y"  := (UInt64.bitwise_and x y) (at level 30).
 Local Notation "x + y"  := (UInt64.add x y).
 Local Notation "~ x"  := (UInt64.bitwise_not x).
-Definition rot x k := ((x >> k) | (x << (64 - k)%int63)).
+Definition rot x k := ((x >> k) | (x << (64 - k)%uint63)).
 Local Notation "x >>> y" := (rot x y) (at level 30).
 
 
 (** 2.1 Parameters. *)
 
 (** G rotation *)
-Definition R1 := 32%int63.
-Definition R2 := 24%int63.
-Definition R3 := 16%int63.
-Definition R4 := 63%int63.
+Definition R1 := 32%uint63.
+Definition R2 := 24%uint63.
+Definition R3 := 16%uint63.
+Definition R4 := 63%uint63.
 
-Definition G (v: Vec16.t UInt64.t) (a b c d: Int63.int) (x y: UInt64.t)
+Definition G (v: Vec16.t UInt64.t) (a b c d: Uint63.int) (x y: UInt64.t)
 : Vec16.t UInt64.t
 := let ua := (Vec16.get_by_int v a) + (Vec16.get_by_int v b) + x in
    let ud := ((Vec16.get_by_int v d) ^ ua) >>> R1 in
@@ -69,7 +69,7 @@ Definition G (v: Vec16.t UInt64.t) (a b c d: Int63.int) (x y: UInt64.t)
 End MixingFunctionG.
 
 
-Definition f_round (v m: Vec16.t UInt64.t) (s: Vec16.t Int63.int)
+Definition f_round (v m: Vec16.t UInt64.t) (s: Vec16.t Uint63.int)
 : Vec16.t UInt64.t
 := let ms i := Vec16.get_by_int m (Vec16.get_by_int s i) in
    (let v1 := G v  0 4  8 12 (ms  0) (ms  1) in
@@ -79,10 +79,10 @@ Definition f_round (v m: Vec16.t UInt64.t) (s: Vec16.t Int63.int)
     let v5 := G v4 0 5 10 15 (ms  8) (ms  9) in
     let v6 := G v5 1 6 11 12 (ms 10) (ms 11) in
     let v7 := G v6 2 7  8 13 (ms 12) (ms 13) in
-              G v7 3 4  9 14 (ms 14) (ms 15))%int63.
+              G v7 3 4  9 14 (ms 14) (ms 15))%uint63.
 
 Definition sigma
-: Vec16.t (Vec16.t Int63.int)
+: Vec16.t (Vec16.t Uint63.int)
 := (let z := Vec16.fill 0 in
     Vec16.Vec16 (Vec16.Vec16  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15)
                 (Vec16.Vec16 14 10  4  8  9 15 13  6  1 12  0  2 11  7  5  3)
@@ -94,9 +94,9 @@ Definition sigma
                 (Vec16.Vec16 13 11  7 14 12  1  3  9  5  0 15  4  8  6  2 10)
                 (Vec16.Vec16  6 15 14  9 11  3  0  8 12  2 13  7  1  4 10  5)
                 (Vec16.Vec16 10  2  8  4  7  6  1  5 15 11  9 14  3 12 13  0)
-                z z z z z z)%int63.
+                z z z z z z)%uint63.
 
-Fixpoint do_f_rounds_rec (v m: Vec16.t UInt64.t) (rounds_left: nat) (round_digit: Int63.int)
+Fixpoint do_f_rounds_rec (v m: Vec16.t UInt64.t) (rounds_left: nat) (round_digit: Uint63.int)
 {struct rounds_left}
 : Vec16.t UInt64.t
 := match rounds_left with
@@ -104,13 +104,13 @@ Fixpoint do_f_rounds_rec (v m: Vec16.t UInt64.t) (rounds_left: nat) (round_digit
    | S k => do_f_rounds_rec (f_round v m (Vec16.get_by_int sigma round_digit))
                             m
                             k
-                            (if round_digit < 9
+                            (if round_digit <? 9
                                then round_digit + 1
-                               else 0)%int63
+                               else 0)%uint63
    end.
 
 Definition do_f_rounds (v m: Vec16.t UInt64.t) (rounds: Z)
-:= do_f_rounds_rec v m (Z.to_nat rounds) 0%int63.
+:= do_f_rounds_rec v m (Z.to_nat rounds) 0%uint63.
 
 Definition F (h: Vec8.t UInt64.t) (m: Vec16.t UInt64.t)
               (c0 c1: UInt64.t) (final: bool) (rounds: UInt64.t)

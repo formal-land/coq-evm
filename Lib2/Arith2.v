@@ -511,12 +511,11 @@ Lemma Nat2N_inj_mod (a b: nat) (ok: b <> 0):
   N.of_nat (a mod b) = (N.of_nat a mod N.of_nat b)%N.
 Proof.
 destruct b. { contradiction. }
-rewrite Nat.mod_eq by discriminate.
+rewrite Nat.Div0.mod_eq by discriminate.
 rewrite Nat2N.inj_sub.
 rewrite Nat2N.inj_mul.
 rewrite Nat2N_inj_div.
-symmetry. apply N.mod_eq.
-discriminate.
+symmetry. apply N.Div0.mod_eq.
 Qed.
 
 (**************************************************************************)

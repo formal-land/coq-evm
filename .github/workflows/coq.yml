@@ -1,0 +1,49 @@
+name: Coq
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download Git submodules
+        run: git submodule update --init --recursive
+      - uses: coq-community/docker-coq-action@v1
+        with:
+          custom_image: coqorg/coq:8.17-ocaml-4.14-flambda
+          custom_script: |
+            startGroup "Install dependencies"
+              sudo apt-get update
+              sudo apt-get install -y golang bsdmainutils bison
+              bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
+              source ~/.gvm/scripts/gvm
+              # We need this intermediate step before going to 1.21
+              gvm install go1.17
+              gvm use go1.17
+              go version
+              gvm install go1.21
+              gvm use go1.21
+              go version
+            endGroup
+            startGroup "Set the rights"
+              sudo chown -R $(whoami) .
+            endGroup
+            startGroup "Compile the project"
+              ./configure
+              make -j
+            endGroup
+            startGroup "Run the tests"
+              cd test
+              ./configure
+              make -j
+              cd ..
+            endGroup

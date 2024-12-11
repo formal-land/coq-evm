@@ -1,7 +1,7 @@
 From Coq Require Import Arith NArith ZArith String.
 From Coq Require Import Lia Bool.
 From Coq Require Import Eqdep_dec.
-From Coq Require Import Int63.
+From Coq Require Import Uint63.
 
 Require Import Nibble.
 Local Open Scope N_scope.
@@ -654,7 +654,7 @@ Definition consume_and_produce_count (op: instruction)
    | STATICCALL   => (6, 1)
    | REVERT       => (2, 0)
    | SELFDESTRUCT => (1, 0)
-   end)%int63.
+   end)%uint63.
 
 Definition consume_count (op: instruction) := fst (consume_and_produce_count op).
 Definition produce_count (op: instruction) := snd (consume_and_produce_count op).

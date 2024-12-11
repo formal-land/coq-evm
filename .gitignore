@@ -1,0 +1,15 @@
+# Tests
+test/gen_tests/gen_tests
+test/*.v
+
+# Coq files
+.lia.cache
+.nia.cache
+.Makefile.d
+Makefile
+Makefile.conf
+*.aux
+*.glob
+*.vo
+*.vok
+*.vos
